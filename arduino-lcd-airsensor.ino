@@ -6,6 +6,7 @@
 #include <Adafruit_ST7735.h>
 #include <SPI.h>
 #include <dhtnew.h>
+#include <MQUnifiedsensor.h>
 
 #define TFT_CS   4  // CS
 #define TFT_DC   7  // A0
@@ -13,10 +14,19 @@
 #define TFT_SCLK 5  // Clock out SCK
 #define TFT_RST  8  // RST
 
+#define ST7735_GRAY    0x8410
+
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 DHTNEW dhtSensor(10);
 
-float p = 3.1415926;
+#define board "Arduino UNO"
+#define Voltage_Resolution 5
+#define pin A0 //Analog input 0 of your arduino
+#define type "MQ-135" //MQ135
+#define ADC_Bit_Resolution 10
+#define RatioMQ135CleanAir 3.6
+
+MQUnifiedsensor MQ135Sensor(board, Voltage_Resolution, ADC_Bit_Resolution, pin, type);
 
 float temp;
 float humd;
@@ -28,8 +38,10 @@ void setup(void) {
   Serial.begin(9600);
   Serial.print(F("LY2EN air module testing"));
 
-  tft.initR(INITR_BLACKTAB);      
+  MQ135Sensor.setRegressionMethod(1);
+  MQ135Sensor.init();
 
+  tft.initR(INITR_BLACKTAB);
   // tft.initR(INITR_GREENTAB);      
   // tft.setSPISpeed(40000000);
 
@@ -52,6 +64,27 @@ void loop() {
   temp = dhtSensor.getTemperature();
   humd = dhtSensor.getHumidity();
 
+  MQ135Sensor.update();
+
+  MQ135Sensor.setA(605.18); MQ135Sensor.setB(-3.937);
+  float CO = MQ135Sensor.readSensor();
+
+  MQ135Sensor.setA(77.255); MQ135Sensor.setB(-3.18);
+  float Alcohol = MQ135Sensor.readSensor();
+
+  MQ135Sensor.setA(110.47); MQ135Sensor.setB(-2.862);
+  float CO2 = MQ135Sensor.readSensor();
+
+  MQ135Sensor.setA(44.947); MQ135Sensor.setB(-3.445);
+  float Toluene = MQ135Sensor.readSensor();
+
+  MQ135Sensor.setA(102.2 ); MQ135Sensor.setB(-2.473);
+  float NH4 = MQ135Sensor.readSensor();
+
+  MQ135Sensor.setA(34.668); MQ135Sensor.setB(-3.369);
+  float Acetone = MQ135Sensor.readSensor();
+
+
   tft.fillScreen(ST77XX_BLACK);
 
   tft.setCursor(0, 0);
@@ -73,6 +106,35 @@ void loop() {
   tft.print(stateChange(humd, humd_prev));
   tft.println(humd,1);
 
+  tft.setTextColor(ST7735_GRAY);
+  tft.print("CO:  ");
+  tft.setTextColor(ST77XX_ORANGE);
+  tft.println(CO,1);
+
+  tft.setTextColor(ST7735_GRAY);
+  tft.print("CO2: ");
+  tft.setTextColor(ST77XX_ORANGE);
+  tft.println(CO,1);
+
+  tft.setTextColor(ST7735_GRAY);
+  tft.print("NH4: ");
+  tft.setTextColor(ST77XX_ORANGE);
+  tft.println(NH4,1);
+
+  tft.setTextColor(ST7735_GRAY);
+  tft.print("Alco:");
+  tft.setTextColor(ST77XX_ORANGE);
+  tft.println(Alcohol,1);
+
+  tft.setTextColor(ST7735_GRAY);
+  tft.print("Acet:");
+  tft.setTextColor(ST77XX_ORANGE);
+  tft.println(Acetone,1);
+
+  tft.setTextColor(ST7735_GRAY);
+  tft.print("Tolu:");
+  tft.setTextColor(ST77XX_ORANGE);
+  tft.println(Toluene,1);
 
   tft.setTextSize(1);
   tft.setTextColor(ST77XX_WHITE);
