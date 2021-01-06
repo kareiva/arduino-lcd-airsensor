@@ -55,6 +55,34 @@ void setup(void) {
   Serial.println("done");
 
 }
+/*
+void loop() {
+
+  // calibration 
+  Serial.print("Calibrating please wait.");
+  float calcR0 = 0;
+  for(int i = 1; i<=10; i ++)
+  {
+    MQ135Sensor.update(); // Update data, the arduino will be read the voltage on the analog pin
+    calcR0 += MQ135Sensor.calibrate(RatioMQ135CleanAir);
+    Serial.print(".");
+  }
+  MQ135Sensor.setR0(calcR0/10);
+  Serial.println("  done!.");
+  
+  if(isinf(calcR0)) {
+    Serial.println("Warning: Conection issue founded, R0 is infite (Open circuit detected) please check your wiring and supply"); 
+    while(1);
+    }
+  if(calcR0 == 0) {
+    Serial.println("Warning: Conection issue founded, R0 is zero (Analog pin with short circuit to ground) please check your wiring and supply"); 
+    while(1);
+    }
+  // end calibration
+
+}
+
+*/
 
 void loop() {
 
